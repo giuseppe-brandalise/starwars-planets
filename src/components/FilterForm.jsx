@@ -1,13 +1,28 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import PlanetContext from '../context/PlanetContext';
 import useFormFilter from '../hooks/useFormFilter';
 
 function FilterForm() {
-  const { planets, setFilteredPlanets, filteredPlanets } = useContext(PlanetContext);
+  const {
+    planets,
+    setFilteredPlanets,
+    filteredPlanets,
+  } = useContext(PlanetContext);
+  const [fullUsedFilters, setFullUsedFilters] = useState([]);
+  const [usedFilters, setUsedFilters] = useState([]);
   const nameFilter = useFormFilter('');
   const columnFilter = useFormFilter('population');
   const comparisonFilter = useFormFilter('maior que');
   const valueFilter = useFormFilter('0');
+
+  const filters = [
+    'population',
+    'orbital_period',
+    'diameter',
+    'rotation_period',
+    'surface_water',
+  ];
+  const nonUsedFilters = filters.filter((filter) => !usedFilters.includes(filter));
 
   useEffect(() => {
     setFilteredPlanets(planets
@@ -29,11 +44,8 @@ function FilterForm() {
         data-testid="column-filter"
         onChange={ ({ target }) => columnFilter.onChange(target.value) }
       >
-        <option value="population">population</option>
-        <option value="orbital_period">orbital_period</option>
-        <option value="diameter">diameter</option>
-        <option value="rotation_period">rotation_period</option>
-        <option value="surface_water">surface_water</option>
+        { nonUsedFilters
+          .map((filter) => <option key={ filter } value={ filter }>{ filter }</option>) }
       </select>
       <select
         value={ comparisonFilter.value }
@@ -56,24 +68,50 @@ function FilterForm() {
         onClick={ () => {
           switch (comparisonFilter.value) {
           case 'maior que':
+            setUsedFilters([...usedFilters, columnFilter.value]);
+            setFullUsedFilters([...fullUsedFilters,
+              `${columnFilter.value} ${comparisonFilter.value} ${valueFilter.value}`]);
             setFilteredPlanets(filteredPlanets
-              .filter((planet) => planet[columnFilter.value] > +(valueFilter.value)));
+              .filter((planet) => +(planet[columnFilter.value]) > +(valueFilter.value)));
             break;
           case 'menor que':
+            setUsedFilters([...usedFilters, columnFilter.value]);
+            setFullUsedFilters([...fullUsedFilters,
+              `${columnFilter.value} ${comparisonFilter.value} ${valueFilter.value}`]);
             setFilteredPlanets(filteredPlanets
-              .filter((planet) => planet[columnFilter.value] < +(valueFilter.value)));
+              .filter((planet) => +(planet[columnFilter.value]) < +(valueFilter.value)));
             break;
           case 'igual a':
+            setUsedFilters([...usedFilters, columnFilter.value]);
+            setFullUsedFilters([...fullUsedFilters,
+              `${columnFilter.value} ${comparisonFilter.value} ${valueFilter.value}`]);
             setFilteredPlanets(filteredPlanets
-              .filter((planet) => planet[columnFilter.value] === valueFilter.value));
+              .filter((planet) => (
+                +(planet[columnFilter.value]) === +(valueFilter.value))));
             break;
           default:
             break;
           }
+          columnFilter.onChange(nonUsedFilters[0]);
         } }
       >
         FILTRAR
       </button>
+      <br />
+      {fullUsedFilters.map((filter) => (
+        <div key={ filter }>
+          { filter }
+          <button
+            data-testid="filter"
+            type="button"
+            onChange={ () => {
+              setFullUsedFilters([...fullUsedFilters]);
+            } }
+          >
+            Delete
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
