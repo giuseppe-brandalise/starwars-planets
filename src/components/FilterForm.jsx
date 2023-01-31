@@ -25,6 +25,37 @@ function FilterForm() {
   const nonUsedFilters = filters.filter((filter) => !usedFilters.includes(filter));
 
   useEffect(() => {
+    if (fullUsedFilters.length === 0) {
+      setFilteredPlanets([...planets]);
+    }
+    if (fullUsedFilters.length === 1) {
+      switch (fullUsedFilters[0].comparison) {
+      case 'maior que':
+        setFilteredPlanets(planets
+          .filter((planet) => planet[fullUsedFilters[0]
+            .column] > +(fullUsedFilters[0].qtd)));
+        break;
+      case 'menor que':
+        setFilteredPlanets(planets
+          .filter((planet) => planet[fullUsedFilters[0]
+            .column] < +(fullUsedFilters[0].qtd)));
+        break;
+      case 'igual a':
+        setFilteredPlanets(planets
+          .filter((planet) => +(planet[fullUsedFilters[0]
+            .column]) === +(fullUsedFilters[0].qtd)));
+        break;
+      default:
+        break;
+      }
+    }
+  }, [fullUsedFilters, planets, setFilteredPlanets]);
+
+  useEffect(() => {
+    setUsedFilters((fullUsedFilters.map((e) => e.column)));
+  }, [fullUsedFilters]);
+
+  useEffect(() => {
     setFilteredPlanets(planets
       .filter(({ name }) => name.includes(nameFilter.value)));
   }, [nameFilter.value, planets, setFilteredPlanets]);
@@ -66,28 +97,25 @@ function FilterForm() {
         type="button"
         data-testid="button-filter"
         onClick={ () => {
+          setUsedFilters([...usedFilters, columnFilter.value]);
+          setFullUsedFilters([...fullUsedFilters,
+            {
+              column: columnFilter.value,
+              comparison: comparisonFilter.value,
+              qtd: valueFilter.value,
+            }]);
           switch (comparisonFilter.value) {
           case 'maior que':
-            setUsedFilters([...usedFilters, columnFilter.value]);
-            setFullUsedFilters([...fullUsedFilters,
-              `${columnFilter.value} ${comparisonFilter.value} ${valueFilter.value}`]);
             setFilteredPlanets(filteredPlanets
-              .filter((planet) => +(planet[columnFilter.value]) > +(valueFilter.value)));
+              .filter((planet) => planet[columnFilter.value] > +(valueFilter.value)));
             break;
           case 'menor que':
-            setUsedFilters([...usedFilters, columnFilter.value]);
-            setFullUsedFilters([...fullUsedFilters,
-              `${columnFilter.value} ${comparisonFilter.value} ${valueFilter.value}`]);
             setFilteredPlanets(filteredPlanets
-              .filter((planet) => +(planet[columnFilter.value]) < +(valueFilter.value)));
+              .filter((planet) => planet[columnFilter.value] < +(valueFilter.value)));
             break;
           case 'igual a':
-            setUsedFilters([...usedFilters, columnFilter.value]);
-            setFullUsedFilters([...fullUsedFilters,
-              `${columnFilter.value} ${comparisonFilter.value} ${valueFilter.value}`]);
             setFilteredPlanets(filteredPlanets
-              .filter((planet) => (
-                +(planet[columnFilter.value]) === +(valueFilter.value))));
+              .filter((planet) => planet[columnFilter.value] === valueFilter.value));
             break;
           default:
             break;
@@ -99,19 +127,33 @@ function FilterForm() {
       </button>
       <br />
       {fullUsedFilters.map((filter) => (
-        <div key={ filter }>
-          { filter }
+        <div key={ filter.column } data-testid="filter">
+          {`${filter.column}
+           ${filter.comparison}
+           ${filter.qtd}`}
           <button
-            data-testid="filter"
             type="button"
-            onChange={ () => {
-              setFullUsedFilters([...fullUsedFilters]);
+            onClick={ () => {
+              setFullUsedFilters(fullUsedFilters
+                .filter((e) => e.column !== filter.column));
+            //   setFilteredPlanets(planets.filter((planet) => reFilter(planet)));
             } }
           >
             Delete
           </button>
         </div>
       ))}
+      <button
+        data-testid="button-remove-filters"
+        type="button"
+        onClick={ () => {
+          setFullUsedFilters([]);
+          setUsedFilters([]);
+          setFilteredPlanets([...planets]);
+        } }
+      >
+        Delete All
+      </button>
     </div>
   );
 }
