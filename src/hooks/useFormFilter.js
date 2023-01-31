@@ -3,8 +3,8 @@ import { useState } from 'react';
 function useFormFilter(initialValue) {
   const [value, setValue] = useState(initialValue);
 
-  function handleChange(e) {
-    setValue(e.target.value);
+  function handleChange(newValue) {
+    setValue(newValue);
   }
 
   return {
