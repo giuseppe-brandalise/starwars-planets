@@ -132,11 +132,11 @@ function FilterForm() {
            ${filter.comparison}
            ${filter.qtd}`}
           <button
+            data-testid="delete-one"
             type="button"
             onClick={ () => {
               setFullUsedFilters(fullUsedFilters
                 .filter((e) => e.column !== filter.column));
-            //   setFilteredPlanets(planets.filter((planet) => reFilter(planet)));
             } }
           >
             Delete

@@ -52,7 +52,7 @@ describe('Testa App', () => {
     expect(planetByName).toBeInTheDocument();
   });
 
-  it('should be able to search by numberic values', async () => {
+  it('should be able to search by numberic values and delete said searchs', async () => {
     await act(() => render(<App />))
 
     const columnFilter = await screen.getByTestId('column-filter')
@@ -71,5 +71,40 @@ describe('Testa App', () => {
 
     const planets = await screen.findAllByTestId('planet');
     expect(planets.length).toBe(2);
+
+    const deleteButtons = await screen.findAllByTestId('delete-one')
+    expect((deleteButtons).length).toBe(1);
+    
+    act(() => {
+        userEvent.click(deleteButtons[0])
+    })
+
+    const newPlanets = await screen.findAllByTestId('planet');
+    expect(newPlanets.length).toBe(10)
+
+    act(() => {
+      userEvent.selectOptions(columnFilter, 'diameter');
+      userEvent.selectOptions(compFilter, 'menor que');
+      userEvent.type(valueFilter, '15000');
+      userEvent.click(buttonFilter);
+      userEvent.selectOptions(columnFilter, 'orbital_period');
+      userEvent.selectOptions(compFilter, 'igual a');
+      userEvent.type(valueFilter, '304');
+      userEvent.click(buttonFilter);
+    })
+
+    const deleteAll = screen.getByRole('button', {
+      name: /delete all/i
+    })
+
+    expect(deleteAll).toBeInTheDocument();
+
+    act(() => {
+      userEvent.click(deleteAll);
+    })
+
+    const newNewPlanets = await screen.findAllByTestId('planet');
+      expect(newNewPlanets.length).toBe(10)
   })
+
 })
